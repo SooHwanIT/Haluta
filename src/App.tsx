@@ -32,7 +32,6 @@ export default function App() {
   return (
     <div className="gradient-bg min-h-screen font-sans transition-colors duration-300 ">
       <div className="relative min-h-screen bg-black/90 dark:bg-white/5">
-        {/* === START: Modified Code === */}
         <header className="absolute top-0 left-0 p-4 z-50">
           <button onClick={toggleDarkMode} className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
             {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
@@ -44,7 +43,6 @@ export default function App() {
             {isSidebarOpen ? <PanelRightClose size={20} /> : <PanelLeftClose size={20} />}
           </button>
         </div>
-        {/* === END: Modified Code === */}
 
         <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 lg:gap-8">
           <main className="w-full max-w-3xl mx-auto transition-all duration-500 flex-grow flex flex-col items-center justify-center">
@@ -73,6 +71,12 @@ export default function App() {
       </div>
 
       <SubmitModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleSubmitScore} stats={{ wpm: gameState.wpm, errors: gameState.errors, time: gameState.time }} submissionStatus={rankingState.submissionStatus} />
+
+      {/* === START: 로고 추가 === */}
+      <div className="fixed bottom-5 right-5 z-50 text-sm font-mono font-semibold text-gray-400 dark:text-gray-600 select-none">
+        하루타
+      </div>
+      {/* === END: 로고 추가 === */}
     </div>
   );
 }
