@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { MOCK_TEXTS } from './src/texts';
 // Vercel Postgres 관련 함수와 sql 객체를 가져옵니다.
 import { sql } from '@vercel/postgres';
-import { initializeDatabase, clearRankingData } from './src/database';
+import { initializeDatabase, checkAndClearRankingsIfNeeded } from './src/database';
 
 // --- 타입 정의 ---
 interface RankEntry {
@@ -24,18 +24,15 @@ app.use(express.json());
 // 서버 시작 시 데이터베이스 테이블을 확인하고 생성합니다.
 initializeDatabase().catch(console.error);
 
-// --- 데이터 초기화 로직 ---
-let lastResetDate: string | null = null;
-
+// --- 데이터 초기화 로직 (개선된 버전) ---
 const dailyResetMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const today = new Date().toISOString().slice(0, 10);
-  if (today !== lastResetDate) {
-    try {
-      await clearRankingData();
-      lastResetDate = today;
-    } catch (error) {
-      console.error("매일 데이터 초기화 실패:", error);
-    }
+  try {
+    // DB를 확인하여 날짜가 변경된 경우에만 랭킹 데이터를 초기화합니다.
+    // 이 방식은 서버리스 환경에서 여러 번 실행되어도 안전하고 효율적입니다.
+    await checkAndClearRankingsIfNeeded();
+  } catch (error) {
+    console.error("매일 데이터 초기화 미들웨어 실행 중 오류 발생:", error);
+    // 초기화에 실패하더라도 API는 계속 작동해야 하므로 에러를 반환하지 않고 넘어갑니다.
   }
   next();
 };
@@ -67,7 +64,6 @@ app.get('/api/word-of-the-day', (req: Request, res: Response) => {
  */
 app.get('/api/ranking', async (req: Request, res: Response) => {
   try {
-    // await를 사용하여 비동기 쿼리 결과를 기다립니다.
     const { rows } = await sql<RankEntry>`
       SELECT * FROM ranking ORDER BY wpm DESC, errors ASC LIMIT 100;
     `;
@@ -95,10 +91,8 @@ app.post('/api/ranking', async (req: Request, res: Response) => {
       return res.status(400).json({ message: "wpm과 errors는 0 이상이어야 합니다." });
     }
     
-    // Postgres의 NOW() 함수를 사용하여 현재 시간을 기록합니다.
     const createdAt = new Date();
 
-    // RETURNING * 를 사용하여 방금 삽입된 행의 전체 데이터를 반환받습니다.
     const { rows } = await sql<RankEntry>`
       INSERT INTO ranking (name, wpm, errors, createdAt)
       VALUES (${name}, ${wpm}, ${errors}, ${createdAt})
