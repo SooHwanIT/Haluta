@@ -59,72 +59,56 @@ let rankingData: RankEntry[] = [
 // --- Express 서버 설정 ---
 
 const app = express();
-const port = 3001; // 원하는 포트로 변경 가능
 
 // 미들웨어 설정
-app.use(cors()); // CORS 허용
-app.use(express.json()); // POST 요청의 body를 파싱하기 위함
+app.use(cors());
+app.use(express.json());
 
 // --- 라우팅 및 로직 ---
 
 /**
  * 오늘의 글을 반환하는 API
- * @route GET /word-of-the-day
+ * @route GET /api/word-of-the-day
  */
-app.get('/word-of-the-day', (req: Request, res: Response) => {
+app.get('/api/word-of-the-day', (req: Request, res: Response) => {
   try {
-    // 1. 오늘 날짜를 'YYYY-MM-DD' 형식의 문자열로 생성
     const today = new Date();
     const dateString = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-
-    // 2. 날짜 문자열을 기반으로 SHA256 해시 생성
     const hash = crypto.createHash('sha256').update(dateString).digest('hex');
-
-    // 3. 해시의 첫 번째 글자를 16진수 숫자로 변환 (0-15)
     const index = parseInt(hash.charAt(0), 16);
-
-    // 4. 해당 인덱스의 텍스트를 선택
     const todaysText = MOCK_TEXTS[index];
-
-    console.log(`[${dateString}] 오늘의 글 인덱스: ${index}`);
-
     res.status(200).json({ text: todaysText });
   } catch (error) {
-    console.error("오늘의 글을 가져오는 중 오류 발생:", error);
     res.status(500).json({ message: "서버 내부 오류가 발생했습니다." });
   }
 });
 
 /**
  * 랭킹 목록을 반환하는 API
- * @route GET /ranking
+ * @route GET /api/ranking
  */
-app.get('/ranking', (req: Request, res: Response) => {
+app.get('/api/ranking', (req: Request, res: Response) => {
   try {
-    // wpm 높은 순, wpm이 같으면 errors 적은 순으로 정렬
     const sortedRanking = [...rankingData].sort((a, b) => {
       if (b.wpm !== a.wpm) {
         return b.wpm - a.wpm;
       }
       return a.errors - b.errors;
     });
-
     res.status(200).json(sortedRanking);
   } catch (error) {
-    console.error("랭킹을 가져오는 중 오류 발생:", error);
     res.status(500).json({ message: "서버 내부 오류가 발생했습니다." });
   }
 });
 
 /**
  * 새로운 랭킹을 등록하는 API
- * @route POST /ranking
+ * @route POST /api/ranking
  */
-app.post('/ranking', (req: Request, res: Response) => {
+app.post('/api/ranking', (req: Request, res: Response) => {
   try {
     const { name, wpm, errors } = req.body;
 
-    // 1. 유효성 검사
     if (typeof name !== 'string' || typeof wpm !== 'number' || typeof errors !== 'number') {
       return res.status(400).json({ message: "잘못된 데이터 형식입니다." });
     }
@@ -135,60 +119,15 @@ app.post('/ranking', (req: Request, res: Response) => {
       return res.status(400).json({ message: "wpm과 errors는 0 이상이어야 합니다." });
     }
 
-    // 2. 새로운 랭킹 항목 생성
     const newId = rankingData.length > 0 ? Math.max(...rankingData.map(r => r.id)) + 1 : 1;
-    const newRankEntry: RankEntry = {
-      id: newId,
-      name,
-      wpm,
-      errors,
-    };
-
-    // 3. 데이터 배열에 추가
+    const newRankEntry: RankEntry = { id: newId, name, wpm, errors };
     rankingData.push(newRankEntry);
     
-    console.log("새로운 랭킹 등록:", newRankEntry);
-
     res.status(201).json(newRankEntry);
   } catch (error) {
-    console.error("랭킹 등록 중 오류 발생:", error);
     res.status(500).json({ message: "서버 내부 오류가 발생했습니다." });
   }
 });
 
-
-// --- 서버 실행 ---
-
+// Vercel 환경에서는 app.listen()을 사용하지 않고, app 객체를 export합니다.
 export default app;
-/**
- * --- 프로젝트 설정 및 실행 방법 ---
- *
- * 1. 필요한 패키지 설치
- * npm install express cors typescript ts-node @types/express @types/cors @types/node
- *
- * 2. tsconfig.json 파일 생성 (아래 내용 복사)
- * {
- * "compilerOptions": {
- * "target": "es6",
- * "module": "commonjs",
- * "outDir": "./dist",
- * "rootDir": "./",
- * "strict": true,
- * "esModuleInterop": true,
- * "skipLibCheck": true,
- * "forceConsistentCasingInFileNames": true
- * }
- * }
- *
- * 3. 위 코드를 server.ts 파일로 저장
- *
- * 4. 서버 실행
- * npx ts-node server.ts
- *
- * --- API 엔드포인트 ---
- *
- * - 오늘의 글 가져오기: GET http://localhost:3001/word-of-the-day
- * - 랭킹 목록 보기:    GET http://localhost:3001/ranking
- * - 랭킹 등록하기:      POST http://localhost:3001/ranking
- * - Body (JSON): { "name": "새로운도전자", "wpm": 500, "errors": 3 }
- */
