@@ -6,6 +6,7 @@ import Stats from './components/Stats';
 import Ranking from './components/Ranking';
 import SubmitModal from './components/SubmitModal';
 import { Sun, Moon, PanelLeftClose, PanelRightClose } from 'lucide-react';
+import InfoModal from './components/InfoModal';
 
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -78,9 +79,10 @@ export default function App() {
         submissionStatus={rankingState.submissionStatus} 
       />
 
-      <div className="fixed bottom-5 right-5 z-50 text-sm font-mono font-semibold text-gray-400 dark:text-gray-600 select-none">
-        하루타
-      </div>
+      <InfoModal/>
+      
+
+
     </div>
   );
 }
