@@ -70,13 +70,17 @@ export default function App() {
         </div>
       </div>
 
-      <SubmitModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={handleSubmitScore} stats={{ wpm: gameState.wpm, errors: gameState.errors, time: gameState.time }} submissionStatus={rankingState.submissionStatus} />
+      <SubmitModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSubmit={handleSubmitScore} 
+        stats={{ wpm: gameState.wpm, errors: gameState.errors, time: gameState.time }} 
+        submissionStatus={rankingState.submissionStatus} 
+      />
 
-      {/* === START: 로고 추가 === */}
       <div className="fixed bottom-5 right-5 z-50 text-sm font-mono font-semibold text-gray-400 dark:text-gray-600 select-none">
         하루타
       </div>
-      {/* === END: 로고 추가 === */}
     </div>
   );
 }
