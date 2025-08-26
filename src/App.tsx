@@ -8,6 +8,26 @@ import SubmitModal from './components/SubmitModal';
 import { Sun, Moon, PanelLeftClose, PanelRightClose } from 'lucide-react';
 import InfoModal from './components/InfoModal';
 
+const ThemeTransitionStyle = () => (
+  <style dangerouslySetInnerHTML={{ __html: `
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+      mix-blend-mode: normal;
+    }
+    ::view-transition-new(root) { z-index: 1; }
+    ::view-transition-old(root) { z-index: 0; }
+    @keyframes reveal {
+      from { clip-path: circle(0% at var(--x) var(--y)); }
+      to { clip-path: circle(150% at var(--x) var(--y)); }
+    }
+    ::view-transition-new(root) {
+        animation: reveal 0.5s ease-in-out;
+    }
+  `}} />
+);
+
+
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -21,9 +41,20 @@ export default function App() {
     }
   }, [gameState.status]);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+  const toggleDarkMode = (event) => {
+    if (!document.startViewTransition) {
+      setIsDarkMode(!isDarkMode);
+      document.documentElement.classList.toggle('dark');
+      return;
+    }
+    const x = event.clientX;
+    const y = event.clientY;
+    document.documentElement.style.setProperty('--x', `${x}px`);
+    document.documentElement.style.setProperty('--y', `${y}px`);
+    document.startViewTransition(() => {
+      setIsDarkMode(prevMode => !prevMode);
+      document.documentElement.classList.toggle('dark');
+    });
   };
 
   const handleSubmitScore = async (name: string) => {
@@ -32,6 +63,7 @@ export default function App() {
 
   return (
     <div className="gradient-bg min-h-screen font-sans transition-colors duration-300 ">
+      <ThemeTransitionStyle />
       <div className="relative min-h-screen bg-black/90 dark:bg-white/5">
         <header className="absolute top-0 left-0 p-4 z-50">
           <button onClick={toggleDarkMode} className="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
