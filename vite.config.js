@@ -8,4 +8,12 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001', // 실행 중인 Express 서버 주소
+        changeOrigin: true,
+      }
+    }
+  }
 })
