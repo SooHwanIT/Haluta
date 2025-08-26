@@ -159,10 +159,7 @@ app.post('/ranking', (req: Request, res: Response) => {
 
 // --- 서버 실행 ---
 
-app.listen(port, () => {
-  console.log(`🚀 서버가 http://localhost:${port} 에서 실행 중입니다.`);
-});
-
+export default app;
 /**
  * --- 프로젝트 설정 및 실행 방법 ---
  *

@@ -14,19 +14,13 @@ interface TypingState {
   status: GameStatus;
 }
 
-// --- API 설정 ---
-// Vite 프로젝트의 .env.local 파일에 API 주소를 설정해주세요.
-// VITE_API_URL=http://localhost:3001
-const API_URL = import.meta.env.VITE_API_URL;
+// --- API 호출 함수 (Vercel 배포용으로 수정) ---
 
 /**
  * 서버에서 오늘의 글을 가져옵니다.
  */
 const fetchDailyTextAPI = async (): Promise<string> => {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL is not defined in .env file");
-  }
-  const response = await fetch(`${API_URL}/word-of-the-day`);
+  const response = await fetch(`/api/word-of-the-day`); // 상대 경로로 변경
   if (!response.ok) {
     throw new Error('오늘의 문장을 불러오는 데 실패했습니다.');
   }

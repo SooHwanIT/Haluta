@@ -22,21 +22,13 @@ interface RankingState {
   error: string | null;
 }
 
-// --- API 설정 ---
-// Vite 프로젝트의 .env.local 파일에 아래와 같이 API 주소를 설정해주세요.
-// VITE_API_URL=http://localhost:3001
-const API_URL = import.meta.env.VITE_API_URL;
-
-// --- API 호출 함수 ---
+// --- API 호출 함수 (Vercel 배포용으로 수정) ---
 
 /**
  * 서버에서 랭킹 목록을 가져옵니다.
  */
 const fetchRankingAPI = async (): Promise<RankEntry[]> => {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL is not defined in .env file");
-  }
-  const response = await fetch(`${API_URL}/ranking`);
+  const response = await fetch(`/api/ranking`); // 상대 경로로 변경
   if (!response.ok) {
     throw new Error('랭킹 데이터를 불러오는 데 실패했습니다.');
   }
@@ -47,10 +39,7 @@ const fetchRankingAPI = async (): Promise<RankEntry[]> => {
  * 새로운 점수를 서버에 등록합니다.
  */
 const submitScoreAPI = async (score: NewScore): Promise<RankEntry> => {
-  if (!API_URL) {
-    throw new Error("VITE_API_URL is not defined in .env file");
-  }
-  const response = await fetch(`${API_URL}/ranking`, {
+  const response = await fetch(`/api/ranking`, { // 상대 경로로 변경
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
